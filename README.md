@@ -26,6 +26,7 @@ AWSKRUG(AWS 한국 사용자 모임)의 밋업 녹화 영상을 마케팅용 영
 
 ## 문서
 
+- [docs/mvp-shorts.md](docs/mvp-shorts.md): 첫 구현 범위(쇼츠 MVP)와 2026-11-26 인터뷰의 결정 사항
 - [docs/architecture.md](docs/architecture.md): 처리 흐름과 AWS 서비스 구성 초안, YouTube 업로드의 전제 조건, 아직 결정하지 않은 사항
 - [docs/reference-kshorts-studio.md](docs/reference-kshorts-studio.md): 쇼츠 생성에 `lsszz2100/kshorts-studio`를 쓸 수 있는지 검토한 결과
 
