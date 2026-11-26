@@ -14,3 +14,15 @@ samples/*
 *.wav
 *.pptx
 *.ppt
+
+# 개인 작업 인계 파일
+.handoff.md
+
+# Python
+__pycache__/
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# superlite 실행 상태
+.superlite/
