@@ -17,7 +17,7 @@
 
 ## 사용 순서
 
-공통 옵션은 `--profile`과 `--region`(기본 `us-east-1`)입니다. 오류가 나면 stderr에 한 줄을 쓰고 종료 코드 2로 끝납니다.
+공통 옵션은 `--profile`과 `--region`(기본 `ap-northeast-2`)입니다. 오류가 나면 stderr에 한 줄을 쓰고 종료 코드 2로 끝납니다.
 
 ### 1. transcribe: 영상 전사
 
@@ -33,7 +33,7 @@ shorts transcribe meetup.mp4 --bucket my-work-bucket --out transcript.json --pro
 shorts candidates transcript.json --out candidates.json --count 8 --profile my-profile
 ```
 
-전사문을 문장으로 나눈 뒤 Bedrock 모델에게 30-60초 길이의 후보를 최대 `--count`개(기본 8) 고르게 합니다. 모델 ID는 환경 변수 `SHORTS_BEDROCK_MODEL_ID`로 바꿀 수 있고, 기본값은 `us.anthropic.claude-sonnet-4-6`입니다. 결과 파일에는 `model_id`, `usage`(`input_tokens`, `output_tokens`), `candidates`가 들어갑니다.
+전사문을 문장으로 나눈 뒤 Bedrock 모델에게 30-60초 길이의 후보를 최대 `--count`개(기본 8) 고르게 합니다. 모델 ID는 환경 변수 `SHORTS_BEDROCK_MODEL_ID`로 바꿀 수 있고, 기본값은 `global.anthropic.claude-sonnet-4-6`입니다. 결과 파일에는 `model_id`, `usage`(`input_tokens`, `output_tokens`), `candidates`가 들어갑니다.
 
 ### 3. frame: 영역을 정하기 위한 프레임 추출
 

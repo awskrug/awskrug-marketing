@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from . import aws, candidates, pipeline, render, transcript
 
-DEFAULT_MODEL_ID = "us.anthropic.claude-sonnet-4-6"
+DEFAULT_MODEL_ID = "global.anthropic.claude-sonnet-4-6"
 
 
 class CliError(Exception):
@@ -40,7 +40,7 @@ def _write_json(path: str, data) -> None:
 
 def _add_aws_opts(p) -> None:
     p.add_argument("--profile", default=None, help="AWS 프로필(기본: AWS_PROFILE)")
-    p.add_argument("--region", default="us-east-1")
+    p.add_argument("--region", default="ap-northeast-2")
 
 
 def _parser() -> argparse.ArgumentParser:
