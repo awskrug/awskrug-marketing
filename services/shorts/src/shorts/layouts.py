@@ -4,6 +4,7 @@ OUT_W, OUT_H = 1080, 1920
 BAND_H = 200
 BAND_COLOR = "0x232F3E"
 PANEL_H = (OUT_H - BAND_H) // 2  # 860
+TITLE_LINE_SPACING = 12
 
 
 def _even(n: int) -> int:
@@ -76,7 +77,8 @@ def decorate(title_file: str, ass_file: str, font_file: str, logo: bool) -> str:
     parts = [
         f"[base]drawbox=0:0:{OUT_W}:{BAND_H}:color={BAND_COLOR}:t=fill,"
         f"drawtext=fontfile={_esc(font_file)}:textfile={_esc(title_file)}:expansion=none:"
-        f"fontcolor=white:fontsize=64:x=(w-text_w)/2:y=({BAND_H}-text_h)/2,"
+        f"fontcolor=white:fontsize=64:text_align=C:line_spacing={TITLE_LINE_SPACING}:"
+        f"x=(w-text_w)/2:y=({BAND_H}-text_h)/2,"
         f"ass={_esc(ass_file)}"
     ]
     if logo:

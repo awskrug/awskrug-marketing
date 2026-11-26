@@ -81,3 +81,18 @@ def test_temp_cleaned_on_failure(tmp_path):
     with pytest.raises(RuntimeError):
         pipeline.render_candidate(str(tmp_path / "missing.mp4"), WORDS, _cand(), str(out), FONT)
     assert os.listdir(out) == []
+
+
+def test_margin_v_per_layout(src, tmp_path, monkeypatch):
+    from shorts import subtitles
+
+    seen = []
+    real = subtitles.build_ass
+
+    def spy(cues, *a, **kw):
+        seen.append(kw.get("margin_v", 420))
+        return real(cues, *a, **kw)
+
+    monkeypatch.setattr(subtitles, "build_ass", spy)
+    _render(src, tmp_path, slide=(0, 0, 160, 90), speaker=(160, 90, 160, 90))
+    assert seen == [230, 420, 420]  # split, blur, crop

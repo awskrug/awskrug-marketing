@@ -93,3 +93,11 @@ def test_crop_portrait_and_narrow_sources():
     assert layouts.build_filter("crop", 1080, 1920).startswith("[0:v]crop=1080:1920:0:0,")
     f = layouts.build_filter("crop", 540, 1920)  # narrower than 9:16
     assert "crop=540:960:0:480," in f
+
+
+def test_decorate_title_centred_multiline():
+    f = layouts.decorate("/t/title.txt", "/t/sub.ass", "/f/P.ttf", False)
+    assert "text_align=C" in f
+    assert "x=(w-text_w)/2" in f
+    assert f"y=({layouts.BAND_H}-text_h)/2" in f
+    assert "line_spacing=" in f
