@@ -10,6 +10,8 @@ AWSKRUG(AWS 한국 사용자 모임)의 밋업 녹화 영상을 마케팅용 영
 
 **2. 쇼츠 자동 생성.** 서비스는 녹화 영상의 내용을 요약하고, 핵심 구간을 골라 YouTube Shorts와 SNS에 올릴 수 있는 세로(9:16) 영상을 만듭니다.
 
+**3. YouTube 자동 업로드.** 서비스는 완성한 영상을 AWSKRUG YouTube 채널에 비공개 상태로 올립니다. 운영진이 내용을 확인한 뒤 공개합니다.
+
 ## 디렉토리 구조
 
 | 경로 | 내용 |
@@ -24,7 +26,7 @@ AWSKRUG(AWS 한국 사용자 모임)의 밋업 녹화 영상을 마케팅용 영
 
 ## 문서
 
-- [docs/architecture.md](docs/architecture.md): 처리 흐름과 AWS 서비스 구성 초안, 아직 결정하지 않은 사항
+- [docs/architecture.md](docs/architecture.md): 처리 흐름과 AWS 서비스 구성 초안, YouTube 업로드의 전제 조건, 아직 결정하지 않은 사항
 - [docs/reference-kshorts-studio.md](docs/reference-kshorts-studio.md): 쇼츠 생성에 `lsszz2100/kshorts-studio`를 쓸 수 있는지 검토한 결과
 
 ## 개발
