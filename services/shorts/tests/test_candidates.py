@@ -150,3 +150,41 @@ def test_length_boundary_float_error_kept():
     sents = [{"start": 0.1, "end": 0.1 + 30.0 - 4e-15, "text": "a"}]
     r = candidates.parse_response('[{"start_index":0,"end_index":0,"title":"t","reason":"r"}]', sents)
     assert len(r) == 1
+
+
+def test_too_long_trimmed_from_end():
+    # 0-80초 제안은 상한 60초를 넘는다. 끝 문장을 줄여 0-60초로 맞춘다.
+    out = candidates.parse_response(json.dumps([item(0, 3)]), S4)
+    assert out == [{"start": 0.0, "end": 60.0, "title": "T", "reason": "R"}]
+
+
+def test_trim_cannot_reach_range_dropped():
+    # 줄이면 하한 30초 아래로 내려가는 경우는 버린다.
+    s = [
+        {"start": 0.0, "end": 25.0, "text": "a"},
+        {"start": 25.0, "end": 70.0, "text": "b"},
+    ]
+    assert candidates.parse_response(json.dumps([item(0, 1)]), s) == []
+
+
+def test_trimmed_candidate_frees_room_for_next():
+    # 0-80초를 0-60초로 줄이면 60-80초 구간과 겹치지 않는다.
+    s = S4 + [{"start": 80.0, "end": 100.0, "text": "e"}]
+    out = candidates.parse_response(json.dumps([item(0, 3), item(3, 4)]), s)
+    assert [(c["start"], c["end"]) for c in out] == [(0.0, 60.0), (60.0, 100.0)]
+
+
+def test_prompt_explains_length_rule():
+    p = candidates.build_prompt(S2)
+    assert "끝 시각" in p and "시작 시각" in p
+
+
+def test_prose_with_brackets_before_array():
+    # 모델이 설명문에 [0] 같은 대괄호를 쓴 뒤 JSON 배열을 출력하는 경우.
+    text = "문장 [0]부터 [1]까지는 40초입니다.\n" + json.dumps([item(0, 1)]) + "\n끝 [참고]"
+    out = candidates.parse_response(text, S2)
+    assert [(c["start"], c["end"]) for c in out] == [(0.0, 40.0)]
+
+
+def test_prompt_does_not_ask_for_working():
+    assert "계산해" not in candidates.build_prompt(S2)
