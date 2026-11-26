@@ -116,7 +116,7 @@ def test_candidates_writes_usage(render_files, fake_aws, tmp_path):
     out = tmp_path / "cand.json"
     assert cli.main(["candidates", str(tr), "--out", str(out)]) == 0
     data = json.loads(out.read_text(encoding="utf-8"))
-    assert data["model_id"] == "us.anthropic.claude-sonnet-5"
+    assert data["model_id"] == "us.anthropic.claude-sonnet-4-6"
     assert data["usage"] == {"input_tokens": 10, "output_tokens": 5}
     assert data["candidates"][0]["title"] == "T"
     assert fake_aws["region"] == "us-east-1" and fake_aws["profile"] is None

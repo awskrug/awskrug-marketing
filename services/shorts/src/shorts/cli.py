@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from . import aws, candidates, pipeline, render, transcript
 
-DEFAULT_MODEL_ID = "us.anthropic.claude-sonnet-5"
+DEFAULT_MODEL_ID = "us.anthropic.claude-sonnet-4-6"
 
 
 class CliError(Exception):

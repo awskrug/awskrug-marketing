@@ -33,7 +33,7 @@ shorts transcribe meetup.mp4 --bucket my-work-bucket --out transcript.json --pro
 shorts candidates transcript.json --out candidates.json --count 8 --profile my-profile
 ```
 
-전사문을 문장으로 나눈 뒤 Bedrock 모델에게 30-60초 길이의 후보를 최대 `--count`개(기본 8) 고르게 합니다. 모델 ID는 환경 변수 `SHORTS_BEDROCK_MODEL_ID`로 바꿀 수 있고, 기본값은 `us.anthropic.claude-sonnet-5`입니다. 결과 파일에는 `model_id`, `usage`(`input_tokens`, `output_tokens`), `candidates`가 들어갑니다.
+전사문을 문장으로 나눈 뒤 Bedrock 모델에게 30-60초 길이의 후보를 최대 `--count`개(기본 8) 고르게 합니다. 모델 ID는 환경 변수 `SHORTS_BEDROCK_MODEL_ID`로 바꿀 수 있고, 기본값은 `us.anthropic.claude-sonnet-4-6`입니다. 결과 파일에는 `model_id`, `usage`(`input_tokens`, `output_tokens`), `candidates`가 들어갑니다.
 
 ### 3. frame: 영역을 정하기 위한 프레임 추출
 

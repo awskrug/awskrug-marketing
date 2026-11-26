@@ -17,7 +17,7 @@
 
 - Ruling: 발표 화면과 발표자 영역은 구간 후보마다 사용자가 사각형(`x,y,w,h`, 원본 픽셀)으로 지정한다 (because 밋업 영상은 구간마다 위치가 달라 영상 전체의 고정 좌표나 단순 자동 검출이 맞지 않는다). 영역을 주지 않으면 1번 구성(split)은 건너뛴다.
 - Ruling: 구간 길이는 30-60초, 후보는 최대 8개 (because `docs/mvp-shorts.md`의 초안 값).
-- Ruling: Bedrock 모델 ID는 환경 변수 `SHORTS_BEDROCK_MODEL_ID`, 기본값 `us.anthropic.claude-sonnet-5` (because 긴 전사문을 읽고 판단하는 작업이며 문서가 Sonnet 계열 시작을 정했다. 품질이 충분하면 Haiku로 낮춘다).
+- Ruling: Bedrock 모델 ID는 환경 변수 `SHORTS_BEDROCK_MODEL_ID`, 기본값 `us.anthropic.claude-sonnet-5` (because 긴 전사문을 읽고 판단하는 작업이며 문서가 Sonnet 계열 시작을 정했다. 품질이 충분하면 Haiku로 낮춘다). 2026-11-27 수정: 이 계정에서 Sonnet 5 호출이 거부되어 기본값을 `us.anthropic.claude-sonnet-4-6`으로 바꿨다.
 - Ruling: 끝 화면은 단색 배경에 로고와 문구를 놓은 2초 화면을 FFmpeg로 만든다. 로고와 글꼴 파일은 명령 인자로 받고 저장소에 넣지 않는다 (because 어느 브랜드 자산을 쓸지 정해지지 않았다).
 - Ruling: 사용량 기록은 Bedrock 응답의 `totalTokens`가 입력+출력보다 크면 그 차이를 출력 토큰에 더한다 (because 추론 토큰이 출력 필드에서 빠지는 경우 비용이 과소 기록된다).
 - Ruling: Detail은 contracts (because 계획 크기 상한 15k 안에 여덟 작업을 담기 위해서다).
