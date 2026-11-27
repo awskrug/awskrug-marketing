@@ -53,6 +53,27 @@ shorts render meetup.mp4 transcript.json candidates.json --index 0 --out-dir out
 
 `candidates.json`의 `--index`번째(0부터) 후보를 렌더링하고, 만든 파일 경로를 한 줄씩 출력합니다. `--slide`와 `--speaker`를 둘 다 주면 위아래로 나눈 split 구성이 추가되고, 하나라도 빠지면 split은 건너뛰고 blur와 crop만 만듭니다. `--logo`는 선택이며, 주면 영상 오른쪽 아래와 끝 화면에 로고가 들어갑니다. 출력 파일 이름은 `clip-{시작 초}-{구성}.mp4`입니다.
 
+## worker (서비스 처리 작업)
+
+웹 서비스에서는 컨테이너 이미지(`Dockerfile`)가 아래 명령을 실행합니다. 두 명령 모두 실패하면 비정상 종료 코드로 끝나며, 실패 기록은 상태 기계가 남깁니다.
+
+```bash
+python -m shorts.worker audio --job-id JOB_ID
+python -m shorts.worker render --job-id JOB_ID --render-id RENDER_ID
+```
+
+`audio`는 원본 영상을 내려받아 폭, 높이, 길이를 기록하고 음성을 `audio.m4a`로 뽑아 올립니다. 원본 음성이 AAC이면 다시 인코딩하지 않고 복사하며, 오디오 스트림이 없으면 오류로 끝납니다. `render`는 작업 레코드의 `renders[RENDER_ID]`에 지정된 후보와 영역으로 세 가지 구성을 렌더링해 `jobs/JOB_ID/renders/RENDER_ID/{구성}.mp4`로 올립니다. 로고는 `assets/logo.png`가 있을 때만 씁니다.
+
+| 환경 변수 | 설명 |
+|---|---|
+| `MEDIA_BUCKET` | 미디어 S3 버킷 이름 |
+| `JOBS_TABLE` | Jobs DynamoDB 테이블 이름 |
+| `SHORTS_FONT_FILE` | 제목과 끝 화면에 쓰는 글꼴 파일 경로. 이미지에서는 Noto Sans CJK Bold(`.ttc`)입니다. |
+| `SHORTS_FONT_NAME` | 자막에 쓰는 글꼴 이름. 기본 `Pretendard`, 이미지에서는 `Noto Sans CJK KR`입니다. |
+| `SHORTS_BEDROCK_MODEL_ID` | 후보 선정 Lambda가 쓰는 모델 ID |
+
+후보 선정 Lambda의 진입점은 `shorts.handlers.select_candidates`이며 입력은 `{"jobId": "..."}`입니다.
+
 ## 테스트
 
 저장소 루트에서 `pytest`를 실행합니다. FFmpeg를 실행하는 테스트는 `slow` 마커가 붙어 있고 글꼴이 필요하므로, `SHORTS_FONT_FILE`을 지정한 환경에서만 실행됩니다. 나머지 테스트는 AWS와 네트워크를 호출하지 않습니다.

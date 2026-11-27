@@ -78,6 +78,7 @@ def render_candidate(
     slide: tuple | None = None,
     speaker: tuple | None = None,
     endcard_text: str = "AWSKRUG",
+    font_name: str = "Pretendard",
 ) -> list[str]:
     start, end = float(candidate["start"]), float(candidate["end"])
     title = candidate.get("title", "")
@@ -102,7 +103,7 @@ def render_candidate(
         for name in layout_names:
             margin_v = SPLIT_MARGIN_V if name == "split" else DEFAULT_MARGIN_V
             with open(ass_file, "w", encoding="utf-8") as f:
-                f.write(subtitles.build_ass(cues, margin_v=margin_v))
+                f.write(subtitles.build_ass(cues, font=font_name, margin_v=margin_v))
             base = layouts.build_filter(name, info["width"], info["height"], slide, speaker)
             fc = base + ";" + layouts.decorate(title_file, ass_file, font_file, bool(logo))
             main = os.path.join(tmp, f"main-{name}.mp4")
