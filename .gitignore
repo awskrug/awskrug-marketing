@@ -26,3 +26,6 @@ __pycache__/
 
 # superlite 실행 상태
 .superlite/
+
+# Claude Code 로컬 상태
+.claude/*.local.md

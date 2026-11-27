@@ -82,6 +82,8 @@ AWSKRUG 밋업 녹화가 어떤 형태로 남는지(발표 화면 포함 여부,
 
 ## AWS 서비스 구성 제안
 
+쇼츠 MVP에 대해서는 2026-11-27에 아래 제안을 구체적인 구성으로 정했습니다. API 경로, 데이터 형식, 처리 단계, CDK 구성은 [plans/2026-11-27-mvp-backend-contract.md](plans/2026-11-27-mvp-backend-contract.md)에 있고, 이 절과 내용이 다르면 그 문서가 우선합니다. 정한 내용은 세 가지입니다. 영상 처리는 AWS Batch가 아니라 AWS Fargate 작업으로 실행합니다. 렌더링 요청이 드물고 한 번에 한 작업씩 실행하면 충분해서 Batch의 대기열과 컴퓨팅 환경이 필요하지 않기 때문입니다. Fargate 작업은 NAT 게이트웨이 없이 공개 서브넷에서 공인 IP로 실행합니다. NAT 게이트웨이의 고정 비용을 피하기 위해서입니다. API는 API Gateway의 HTTP API를 쓰고, CloudFront가 웹 화면과 API를 같은 도메인으로 제공합니다. 이 구성은 `cdk synth`까지만 확인했고 배포해 검증하지 않았습니다. 배포 전에 담당자가 확인할 작업은 [plans/pending-confirmations.md](plans/pending-confirmations.md)에 있습니다.
+
 | 역할 | 제안하는 서비스 | 선택 이유 |
 |---|---|---|
 | 파일 저장 | Amazon S3 | 수 GB 영상은 미리 서명된 URL로 브라우저에서 직접 올립니다. |
@@ -96,7 +98,7 @@ AWSKRUG 밋업 녹화가 어떤 형태로 남는지(발표 화면 포함 여부,
 | 업로드 화면 | S3 + Amazon CloudFront | 정적 웹 화면으로 충분합니다. |
 | 인프라 정의 | AWS CDK(TypeScript) | `infra/`에 초기화해 두었습니다. |
 
-Bedrock에서 쓸 모델은 코드에 고정하지 않고 환경 변수로 둡니다. 핵심 구간 선정과 슬라이드 내용 대조는 긴 전사 텍스트를 읽고 판단하는 작업이므로 중간 등급 모델(Claude Sonnet 계열)에서 시작하고, 결과 품질을 본 뒤 등급을 올리거나 내리는 것을 제안합니다.
+Bedrock에서 쓸 모델은 코드에 고정하지 않고 환경 변수로 둡니다. 핵심 구간 선정과 슬라이드 내용 대조는 긴 전사 텍스트를 읽고 판단하는 작업이므로 중간 등급 모델(Claude Sonnet 계열)에서 시작하고, 결과 품질을 본 뒤 등급을 올리거나 내리는 것을 제안합니다. 2026-11-27에 기본 모델을 Claude Sonnet 4.6(`global.anthropic.claude-sonnet-4-6`)으로 정했습니다. 이 계정에서는 Claude 4.7 이후 모델의 호출이 거부되기 때문입니다.
 
 ## 결정이 필요한 사항
 
