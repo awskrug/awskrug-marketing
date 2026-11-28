@@ -387,3 +387,68 @@ def test_error_bodies_do_not_leak_internals(aws, capsys):
     cap = capsys.readouterr()
     assert "arn:" not in body and "Traceback" not in body and "RuntimeError" not in body
     assert "X-Amz" not in cap.out + cap.err and "arn:" not in cap.out + cap.err
+
+
+# ---- 작업 삭제 ----
+
+def _seed(aws, jid="a" * 32, owner="42", status="FAILED", renders=None):
+    item = {"jobId": jid, "ownerId": owner, "ownerLogin": "octo", "status": status,
+            "sourceKey": f"jobs/{jid}/source/v.mp4"}
+    if renders is not None:
+        item["renders"] = renders
+    aws.dynamo.Table("Jobs").put_item(Item=item)
+    aws.s3.objects.update({f"jobs/{jid}/source/v.mp4", f"jobs/{jid}/renders/r/split.mp4", "jobs/other/source/x.mp4"})
+    return jid
+
+
+def _delete(jid, github_id="42", headers=None):
+    ev = session_event("DELETE /api/jobs/{jobId}", github_id=github_id, path={"jobId": jid})
+    if headers:
+        ev["headers"] = headers
+    return jobs.handler(ev, None)
+
+
+@pytest.mark.parametrize("status", ["UPLOADING", "READY", "FAILED"])
+def test_delete_job_removes_item_and_media(aws, status):
+    jid = _seed(aws, status=status)
+    out = _delete(jid)
+    assert out["statusCode"] == 204
+    assert jid not in aws.dynamo.Table("Jobs").items
+    assert aws.s3.objects == {"jobs/other/source/x.mp4"}
+
+
+@pytest.mark.parametrize("status", ["QUEUED", "EXTRACTING", "TRANSCRIBING", "SELECTING"])
+def test_delete_job_refuses_in_progress(aws, status):
+    jid = _seed(aws, status=status)
+    assert _delete(jid)["statusCode"] == 409
+    assert jid in aws.dynamo.Table("Jobs").items
+
+
+def test_delete_job_refuses_while_rendering(aws):
+    jid = _seed(aws, status="READY", renders={"r": {"status": "RENDERING"}})
+    assert _delete(jid)["statusCode"] == 409
+    assert jid in aws.dynamo.Table("Jobs").items
+
+
+def test_delete_job_owner_only(aws):
+    jid = _seed(aws)
+    assert _delete(jid, github_id="7")["statusCode"] == 403
+    assert jid in aws.dynamo.Table("Jobs").items
+
+
+def test_delete_job_missing_and_bad_id(aws):
+    assert _delete("b" * 32)["statusCode"] == 404
+    assert _delete("../x")["statusCode"] == 404
+
+
+def test_delete_job_rejects_cross_origin(aws):
+    jid = _seed(aws)
+    assert _delete(jid, headers={"origin": "https://evil.example"})["statusCode"] == 403
+    assert jid in aws.dynamo.Table("Jobs").items
+
+
+def test_delete_job_keeps_deletion_when_media_cleanup_fails(aws, monkeypatch):
+    jid = _seed(aws)
+    monkeypatch.setattr(aws.s3, "list_objects_v2", lambda **kw: (_ for _ in ()).throw(RuntimeError("x")))
+    assert _delete(jid)["statusCode"] == 204
+    assert jid not in aws.dynamo.Table("Jobs").items

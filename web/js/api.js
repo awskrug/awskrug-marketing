@@ -47,6 +47,7 @@ export const getMe = () => request('GET', '/api/me');
 export const logout = () => request('POST', '/api/auth/logout');
 export const listJobs = () => request('GET', '/api/jobs');
 export const getJob = (id) => request('GET', `/api/jobs/${enc(id)}`);
+export const deleteJob = (id) => request('DELETE', `/api/jobs/${enc(id)}`);
 export const createJob = (body) => request('POST', '/api/jobs', body);
 export const startJob = (id) => request('POST', `/api/jobs/${enc(id)}/start`);
 export const createRender = (id, body) => request('POST', `/api/jobs/${enc(id)}/renders`, body);

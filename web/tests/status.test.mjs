@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   jobStatusLabel, renderStatusLabel, isFinalJobStatus, hasRendering, sortedRenders,
-  checkFileSize, MAX_UPLOAD_BYTES, formatProgress, formatMB, safeUrl,
+  checkFileSize, MAX_UPLOAD_BYTES, formatProgress, formatMB, safeUrl, canDeleteJob,
 } from '../js/status.js';
 
 test('작업 상태 문구', () => {
@@ -61,4 +61,12 @@ test('safeUrl은 http(s)와 절대 경로만 허용', () => {
   assert.equal(safeUrl('/dev/a.mp4'), '/dev/a.mp4');
   assert.equal(safeUrl('javascript:alert(1)'), '');
   assert.equal(safeUrl(undefined), '');
+});
+
+test('작업 삭제 가능 여부', () => {
+  const job = (status, ownerLogin = 'octo') => ({ status, ownerLogin });
+  for (const s of ['UPLOADING', 'READY', 'FAILED']) assert.equal(canDeleteJob(job(s), 'octo'), true);
+  for (const s of ['QUEUED', 'EXTRACTING', 'TRANSCRIBING', 'SELECTING']) assert.equal(canDeleteJob(job(s), 'octo'), false);
+  assert.equal(canDeleteJob(job('FAILED', 'other'), 'octo'), false);
+  assert.equal(canDeleteJob(job('FAILED'), undefined), false);
 });

@@ -95,6 +95,7 @@ describe('기본 구성 (사용자 도메인 없음)', () => {
     const keys = routes.map((r) => r.RouteKey).sort();
     expect(keys).toEqual(
       [
+        'DELETE /api/jobs/{jobId}',
         'GET /api/auth/callback',
         'GET /api/auth/login',
         'GET /api/jobs',
@@ -381,10 +382,17 @@ describe('최소 권한', () => {
     }
   });
 
-  test('API 함수: jobs는 상태 기계 두 개만 시작하고 삭제 권한이 없다', () => {
+  test('API 함수: jobs는 상태 기계 두 개만 시작하고, 삭제는 작업 항목과 jobs/ 객체로 한정한다', () => {
     const st = statements('JobsFnServiceRole').filter((s) => s.Action === 'states:StartExecution');
     expect(st.flatMap((s) => [].concat(s.Resource))).toHaveLength(2);
-    expect(actions('JobsFnServiceRole').filter((a) => /Delete|Batch/.test(a))).toEqual([]);
+    expect(actions('JobsFnServiceRole').filter((a) => /Delete|Batch/.test(a)).sort()).toEqual(
+      ['dynamodb:DeleteItem', 's3:DeleteObject']);
+    for (const s of statements('JobsFnServiceRole').filter((s) => [].concat(s.Action).includes('s3:DeleteObject'))) {
+      expect(json(s.Resource)).toContain('/jobs/*');
+    }
+    const list = statements('JobsFnServiceRole').filter((s) => [].concat(s.Action).includes('s3:ListBucket'));
+    expect(list).toHaveLength(1);
+    expect(list[0].Condition).toEqual({ StringLike: { 's3:prefix': ['jobs/*'] } });
     expect(actions('JobsFnServiceRole')).not.toContain('secretsmanager:GetSecretValue');
   });
 

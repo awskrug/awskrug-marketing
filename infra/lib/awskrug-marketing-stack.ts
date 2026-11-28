@@ -470,13 +470,21 @@ export class AwskrugMarketingStack extends Stack {
     // 서명된 URL은 서명한 역할의 권한으로 동작하므로 jobs/ 아래 읽기와 쓰기만 줍니다.
     jobsFn.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['s3:GetObject', 's3:PutObject'],
+        actions: ['s3:GetObject', 's3:PutObject', 's3:DeleteObject'],
         resources: [mediaBucket.arnForObjects('jobs/*')],
+      }),
+    );
+    // 작업 삭제(DELETE /api/jobs/{jobId}): jobs/{jobId}/ 아래 객체 목록을 읽고 지웁니다.
+    jobsFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:ListBucket'],
+        resources: [mediaBucket.bucketArn],
+        conditions: { StringLike: { 's3:prefix': ['jobs/*'] } },
       }),
     );
     jobsFn.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:Scan'],
+        actions: ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:DeleteItem', 'dynamodb:Scan'],
         resources: [jobsTable.tableArn],
       }),
     );
@@ -518,6 +526,7 @@ export class AwskrugMarketingStack extends Stack {
       [M.POST, '/api/jobs'],
       [M.GET, '/api/jobs'],
       [M.GET, '/api/jobs/{jobId}'],
+      [M.DELETE, '/api/jobs/{jobId}'],
       [M.POST, '/api/jobs/{jobId}/start'],
       [M.POST, '/api/jobs/{jobId}/renders'],
     ] as [apigwv2.HttpMethod, string][]) {

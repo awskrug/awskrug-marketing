@@ -314,7 +314,54 @@ def _add_render(jid, rid, entry):
     raise ApiError(500, "렌더링 항목을 기록하지 못했습니다.")
 
 
+DELETABLE_STATUSES = ("UPLOADING", "READY", "FAILED")
+
+
+def _delete_prefix(prefix):
+    """prefix 아래 객체를 지운다. 실패해도 작업 삭제는 유지한다. 남은 객체는 수명 주기 규칙이 30일 뒤 지운다."""
+    s3, bucket = common.get_client("s3"), os.environ["MEDIA_BUCKET"]
+    try:
+        kwargs = {"Bucket": bucket, "Prefix": prefix}
+        while True:
+            page = s3.list_objects_v2(**kwargs)
+            keys = [{"Key": o["Key"]} for o in page.get("Contents", [])]
+            if keys:
+                s3.delete_objects(Bucket=bucket, Delete={"Objects": keys, "Quiet": True})
+            if not page.get("IsTruncated"):
+                return
+            kwargs["ContinuationToken"] = page["NextContinuationToken"]
+    except Exception as exc:
+        print(f"media cleanup failed: {type(exc).__name__}")
+
+
+def delete_job(event):
+    """작업을 만든 사람만 지울 수 있다. 처리 중인 작업은 지우지 않는다(처리 단계가 지운 항목을 다시 만들기 때문이다)."""
+    github_id, _ = _identity(event)
+    _guard_post(event)
+    jid = _job_id(event)
+    job = _load_job(jid)
+    if str(job.get("ownerId")) != github_id:
+        raise ApiError(403, "작업을 만든 사람만 지울 수 있습니다.")
+    status = job.get("status")
+    if status not in DELETABLE_STATUSES:
+        raise ApiError(409, "처리 중인 작업은 지울 수 없습니다. 끝난 뒤에 지워 주세요.")
+    if any((r or {}).get("status") == "RENDERING" for r in (job.get("renders") or {}).values()):
+        raise ApiError(409, "렌더링 중인 작업은 지울 수 없습니다. 끝난 뒤에 지워 주세요.")
+    try:
+        _jobs().delete_item(
+            Key={"jobId": jid}, ConditionExpression="#s = :s AND ownerId = :o",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":s": status, ":o": job.get("ownerId")})
+    except Exception as exc:
+        if _is_conditional_failure(exc):
+            raise ApiError(409, "작업 상태가 바뀌었습니다. 새로 고친 뒤 다시 시도해 주세요.")
+        raise
+    _delete_prefix(f"jobs/{jid}/")
+    return common.response(204)
+
+
 ROUTES = {
+    "DELETE /api/jobs/{jobId}": delete_job,
     "GET /api/me": get_me,
     "POST /api/jobs": create_job,
     "POST /api/jobs/{jobId}/start": start_job,

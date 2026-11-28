@@ -36,6 +36,11 @@ export function isFinalJobStatus(s) {
   return s === 'READY' || s === 'FAILED';
 }
 
+// API의 delete_job과 같은 규칙: 만든 사람만, 처리 중이 아닌 작업만 지울 수 있다.
+export function canDeleteJob(job, login) {
+  return Boolean(login) && job?.ownerLogin === login && ['UPLOADING', 'READY', 'FAILED'].includes(job?.status);
+}
+
 export function hasRendering(job) {
   return Object.values(job?.renders ?? {}).some((r) => r.status === 'RENDERING');
 }

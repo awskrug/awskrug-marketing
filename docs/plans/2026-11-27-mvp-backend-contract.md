@@ -58,6 +58,9 @@
 | `GET /api/jobs` | 없음 | `{jobs: [{jobId, title, fileName, status, ownerLogin, createdAt}]}` 최신순 |
 | `GET /api/jobs/{jobId}` | 없음 | 작업 전체 + `sourceUrl` + 각 `outputs` 항목의 `url` |
 | `POST /api/jobs/{jobId}/renders` | `{index, slide, speaker}` | 202 `{renderId}` |
+| `DELETE /api/jobs/{jobId}` | 없음 | 204 |
+
+`DELETE /api/jobs/{jobId}`는 작업 항목과 미디어 버킷의 `jobs/{jobId}/` 아래 객체를 지웁니다. 작업을 만든 사람만 지울 수 있고, 다른 사람이 요청하면 403을 돌려줍니다. 상태가 `UPLOADING`, `READY`, `FAILED`인 작업만 지울 수 있고, 처리 중인 작업이나 렌더링 중인 항목이 있는 작업은 409를 돌려줍니다. 처리 중인 작업을 지우면 처리 단계가 상태를 갱신하면서 일부 필드만 있는 항목을 다시 만들기 때문입니다. 객체 삭제가 실패해도 작업 항목은 지워진 상태로 두며, 남은 객체는 30일 수명 주기 규칙이 지웁니다.
 
 `POST /api/jobs`는 `size`가 5GB(5,368,709,120바이트)를 넘으면 400을 돌려줍니다. 미리 서명된 단일 `PUT`의 상한이 5GB이기 때문이며, 그보다 큰 파일의 멀티파트 업로드는 MVP에서 지원하지 않습니다. `fileName`에서 경로 구분자와 제어 문자는 `_`로 바꿉니다. 브라우저는 `uploadUrl`로 `uploadHeaders`를 붙여 `PUT` 합니다. `uploadUrl`의 유효 시간은 1시간입니다.
 

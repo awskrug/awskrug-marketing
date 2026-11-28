@@ -48,6 +48,8 @@ main:focus { outline: none; }
 .button:hover { border-color: var(--accent); }
 .button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
 .button:disabled { opacity: .55; cursor: not-allowed; }
+.button.danger { color: var(--error); border-color: var(--error); padding: .25rem .7rem; }
+.button.danger:hover { background: var(--error); color: #fff; }
 
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; }
 .card.narrow { max-width: 32rem; margin: 3rem auto; }

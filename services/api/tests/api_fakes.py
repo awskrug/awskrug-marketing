@@ -61,6 +61,14 @@ class FakeTable:
             raise AssertionError(f"unsupported condition: {part}")
         return True
 
+    def delete_item(self, Key, ConditionExpression=None, ExpressionAttributeNames=None,
+                    ExpressionAttributeValues=None, **kw):
+        item = self.items.get(Key[self.key])
+        if ConditionExpression and (item is None or not self._check(
+                item, ConditionExpression, ExpressionAttributeNames or {}, ExpressionAttributeValues or {})):
+            raise ConditionalCheckFailed()
+        self.items.pop(Key[self.key], None)
+
     def update_item(self, Key, UpdateExpression, ExpressionAttributeValues=None,
                     ExpressionAttributeNames=None, ConditionExpression=None, **kw):
         names = ExpressionAttributeNames or {}
@@ -105,6 +113,14 @@ class FakeS3:
     def generate_presigned_url(self, op, Params, ExpiresIn):
         self.presigned.append((op, Params, ExpiresIn))
         return f"https://s3.example/{Params['Key']}?op={op}&exp={ExpiresIn}"
+
+    def list_objects_v2(self, Bucket, Prefix, **kw):
+        return {"Contents": [{"Key": k} for k in sorted(self.objects) if k.startswith(Prefix)], "IsTruncated": False}
+
+    def delete_objects(self, Bucket, Delete):
+        for o in Delete["Objects"]:
+            self.objects.discard(o["Key"])
+        return {}
 
     def head_object(self, Bucket, Key):
         if Key not in self.objects:

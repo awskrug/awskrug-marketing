@@ -56,11 +56,11 @@ function route() {
     try {
       id = decodeURIComponent(job[1]);
     } catch {
-      return show(jobsView);
+      return show(jobsView, { login: me.login });
     }
     show(jobView, { id });
   }
-  else show(jobsView);
+  else show(jobsView, { login: me.login });
 }
 
 async function start() {
