@@ -387,10 +387,10 @@ describe('최소 권한', () => {
     expect(st.flatMap((s) => [].concat(s.Resource))).toHaveLength(2);
     expect(actions('JobsFnServiceRole').filter((a) => /Delete|Batch/.test(a)).sort()).toEqual(
       ['dynamodb:DeleteItem', 's3:DeleteObject']);
-    for (const s of statements('JobsFnServiceRole').filter((s) => [].concat(s.Action).includes('s3:DeleteObject'))) {
+    for (const s of statements('JobsFnServiceRole').filter((s) => ([] as string[]).concat(s.Action).includes('s3:DeleteObject'))) {
       expect(json(s.Resource)).toContain('/jobs/*');
     }
-    const list = statements('JobsFnServiceRole').filter((s) => [].concat(s.Action).includes('s3:ListBucket'));
+    const list = statements('JobsFnServiceRole').filter((s) => ([] as string[]).concat(s.Action).includes('s3:ListBucket'));
     expect(list).toHaveLength(1);
     expect(list[0].Condition).toEqual({ StringLike: { 's3:prefix': ['jobs/*'] } });
     expect(actions('JobsFnServiceRole')).not.toContain('secretsmanager:GetSecretValue');
