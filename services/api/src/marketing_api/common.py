@@ -47,6 +47,25 @@ def set_client(name, client):
         _clients[name] = client
 
 
+def s3_client_kwargs(region=None):
+    """미리 서명된 주소가 리전 주소(버킷.s3.<리전>.amazonaws.com)를 쓰게 하는 S3 클라이언트 설정.
+
+    리전을 지정하지 않으면 boto3는 전역 주소(버킷.s3.amazonaws.com)로 서명한다. 전역 주소는 두 가지 문제를 낸다.
+    사이트의 콘텐츠 보안 정책은 리전 주소만 허용하므로 브라우저가 업로드를 막는다. 그리고 새로 만든 버킷에는
+    S3가 리전 주소로 리다이렉트할 수 있는데, 이 리다이렉트는 CORS 사전 요청을 깨뜨린다.
+    """
+    from botocore.config import Config
+
+    region = region or os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION")
+    if not region:
+        raise ConfigError("AWS_REGION이 설정되지 않았습니다.")
+    return {
+        "region_name": region,
+        "endpoint_url": f"https://s3.{region}.amazonaws.com",
+        "config": Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),
+    }
+
+
 def get_client(name):
     if name not in _clients:
         import boto3
@@ -54,9 +73,7 @@ def get_client(name):
         if name == "dynamodb":
             _clients[name] = boto3.resource("dynamodb")
         elif name == "s3":
-            from botocore.config import Config
-
-            _clients[name] = boto3.client("s3", config=Config(signature_version="s3v4"))
+            _clients[name] = boto3.client("s3", **s3_client_kwargs())
         else:
             _clients[name] = boto3.client(name)
     return _clients[name]

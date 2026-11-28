@@ -171,3 +171,22 @@ def test_check_post_request_origin_and_content_type():
     form = {"headers": {"content-type": "application/x-www-form-urlencoded"}, "body": "a=b"}
     assert common.check_post_request(form, True)[0] == 415
     assert common.check_post_request({"body": "{}"}, True)[0] == 415
+
+
+def test_presigned_url_uses_regional_host():
+    # 실제 boto3로 서명한다(네트워크 호출 없음). 호스트가 CSP와 CORS가 허용하는 리전 주소여야 한다.
+    import boto3
+
+    client = boto3.client("s3", aws_access_key_id="AKIDEXAMPLE", aws_secret_access_key="x" * 40,
+                          **common.s3_client_kwargs("ap-northeast-2"))
+    url = client.generate_presigned_url(
+        "put_object", Params={"Bucket": "my-bucket", "Key": "jobs/a/source/한글 이름.mp4", "ContentType": "video/mp4"},
+        ExpiresIn=60)
+    assert url.startswith("https://my-bucket.s3.ap-northeast-2.amazonaws.com/jobs/a/source/")
+
+
+def test_s3_client_kwargs_requires_region(monkeypatch):
+    monkeypatch.delenv("AWS_REGION", raising=False)
+    monkeypatch.delenv("AWS_DEFAULT_REGION", raising=False)
+    with pytest.raises(common.ConfigError):
+        common.s3_client_kwargs()
