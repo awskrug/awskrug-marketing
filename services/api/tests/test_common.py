@@ -126,6 +126,9 @@ def test_jwt_missing_alg_and_non_dict_payload_rejected():
     {"githubClientId": "a", "githubClientSecret": "b"},
     {"githubClientSecret": "b", "sessionSigningKey": "x" * 40},
     {"githubClientId": "", "githubClientSecret": "b", "sessionSigningKey": "x" * 40},
+    # 배포 직후의 비밀 값: GitHub 값 두 개가 자리 표시자로 남아 있다.
+    {"githubClientId": "REPLACE_ME", "githubClientSecret": "REPLACE_ME", "sessionSigningKey": "x" * 48},
+    {"githubClientId": "a", "githubClientSecret": "replace_me", "sessionSigningKey": "x" * 48},
 ])
 def test_load_secret_validates(aws, secret):
     aws.secrets.secret = secret

@@ -79,6 +79,8 @@ def _validate_secret(data):
     for field in SECRET_FIELDS:
         if not isinstance(data.get(field), str) or not data[field].strip():
             raise ConfigError(f"인증 비밀 값에 {field}가 없습니다. Secrets Manager 값을 채워 주세요.")
+        if data[field].strip().lower() in _PLACEHOLDER_KEYS or "REPLACE_ME" in data[field].upper():
+            raise ConfigError(f"인증 비밀 값의 {field}가 자리 표시자입니다. Secrets Manager 값을 채워 주세요.")
     key = data["sessionSigningKey"]
     if len(key) < MIN_SIGNING_KEY_LENGTH or key.strip().lower() in _PLACEHOLDER_KEYS or "REPLACE_ME" in key.upper():
         raise ConfigError(f"sessionSigningKey가 비어 있거나 자리 표시자이거나 {MIN_SIGNING_KEY_LENGTH}자보다 짧습니다.")
